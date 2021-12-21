@@ -12,34 +12,37 @@ import javax.servlet.http.HttpSession;
 
 import core.db.DataBase;
 import next.model.User;
+import next.utils.UserSessionUtils;
 
-@WebServlet(value = { "/users/login", "/users/loginForm" })
-public class LoginController extends HttpServlet {
+public class LoginController implements Controller {
     private static final long serialVersionUID = 1L;
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        forward("/user/login.jsp", req, resp);
+    public String doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+//        forward("/user/login.jsp", req, resp);
+        return "/user/login.jsp";
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    public String doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String userId = req.getParameter("userId");
         String password = req.getParameter("password");
         User user = DataBase.findUserById(userId);
         if (user == null) {
             req.setAttribute("loginFailed", true);
-            forward("/user/login.jsp", req, resp);
-            return;
+//            forward("/user/login.jsp", req, resp);
+            return "/user/login.jsp";
         }
 
         if (user.matchPassword(password)) {
             HttpSession session = req.getSession();
             session.setAttribute(UserSessionUtils.USER_SESSION_KEY, user);
-            resp.sendRedirect("/");
+//            resp.sendRedirect("/");
+            return "redirect:/";
         } else {
             req.setAttribute("loginFailed", true);
-            forward("/user/login.jsp", req, resp);
+//            forward("/user/login.jsp", req, resp);
+            return "/user/login.jsp";
         }
     }
 
