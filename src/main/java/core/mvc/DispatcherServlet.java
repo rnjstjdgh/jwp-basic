@@ -9,10 +9,9 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.swing.*;
 
-import core.nmvc.AnnotationHandlerMapping;
-import core.nmvc.HandlerExecution;
-import core.nmvc.HandlerMapping;
+import core.nmvc.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +24,7 @@ public class DispatcherServlet extends HttpServlet {
     private AnnotationHandlerMapping annotationHandlerMapping;
 
     private List<HandlerMapping> mappings = new ArrayList<>();
+    private List<HandlerAdapter> adapters = new ArrayList<>();
 
     @Override
     public void init() throws ServletException {
@@ -41,6 +41,10 @@ public class DispatcherServlet extends HttpServlet {
         }
         mappings.add(legacyHandlerMapping);
         mappings.add(annotationHandlerMapping);
+
+        adapters.add(new AnnotationHandlerAdapter());
+        adapters.add(new LegacyHandlerAdapter());
+
     }
 
     @Override
@@ -60,10 +64,11 @@ public class DispatcherServlet extends HttpServlet {
     }
 
     private ModelAndView execution(Object handler, HttpServletRequest req, HttpServletResponse resp) throws Exception {
-        if(handler instanceof Controller)
-            return ((Controller)handler).execute(req, resp);
-        else //if(handler instanceof HandlerExecution)
-            return ((HandlerExecution)handler).handle(req,resp);
+        for(HandlerAdapter handlerAdapter: adapters){
+            if(handlerAdapter.isSupport(handler))
+                return handlerAdapter.handle(handler,req,resp);
+        }
+        return null;
     }
 
     private Object getHandler(HttpServletRequest req){
