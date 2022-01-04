@@ -2,6 +2,7 @@ package core.mvc;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 public class ForwardController extends AbstractController {
     private String forwardUrl;
@@ -15,6 +16,15 @@ public class ForwardController extends AbstractController {
 
     @Override
     public ModelAndView execute(HttpServletRequest request, HttpServletResponse response) throws Exception {
+
+        if("/qna/form.jsp".equals(forwardUrl)){
+            HttpSession session = request.getSession();
+            if(session.getAttribute("user") == null){
+                return jspView("redirect:/");
+            }
+        }
+
+
         return jspView(forwardUrl);
     }
 
